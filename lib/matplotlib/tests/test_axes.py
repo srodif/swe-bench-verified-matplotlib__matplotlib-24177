@@ -2086,6 +2086,35 @@ def test_hist_unequal_bins_density():
     assert_allclose(mpl_heights, np_heights)
 
 
+def test_hist_step_density_autoscaling():
+    # Test that step histograms properly auto-scale y-axis with density=True
+    # https://github.com/matplotlib/matplotlib/issues/24177
+    np.random.seed(12345)
+    data = np.random.standard_normal(10000) * 1.2
+    
+    # Test bar histogram (baseline - should work)
+    fig1, ax1 = plt.subplots()
+    ax1.hist(data, bins=50, density=True, histtype="bar")
+    bar_ylim = ax1.get_ylim()
+    plt.close(fig1)
+    
+    # Test step histogram (should now also work after fix)
+    fig2, ax2 = plt.subplots()
+    ax2.hist(data, bins=50, density=True, histtype="step")
+    step_ylim = ax2.get_ylim()
+    plt.close(fig2)
+    
+    # Both histograms should have similar y-limits when using density=True
+    # The exact values may differ slightly due to different rendering paths,
+    # but they should be in the same ballpark (within 50% of each other)
+    assert bar_ylim[1] > 0.1, "Bar histogram should have reasonable y-max"
+    assert step_ylim[1] > 0.1, "Step histogram should have reasonable y-max" 
+    
+    # The y-limits should be similar (not default values like 0,1)
+    ratio = abs(step_ylim[1] - bar_ylim[1]) / bar_ylim[1]
+    assert ratio < 0.5, f"Step and bar histogram y-limits should be similar, got bar={bar_ylim[1]:.3f}, step={step_ylim[1]:.3f}, ratio={ratio:.3f}"
+
+
 def test_hist_datetime_datasets():
     data = [[datetime.datetime(2017, 1, 1), datetime.datetime(2017, 1, 1)],
             [datetime.datetime(2017, 1, 1), datetime.datetime(2017, 1, 2)]]
