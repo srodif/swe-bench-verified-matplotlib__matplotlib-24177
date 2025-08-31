@@ -6906,6 +6906,7 @@ such objects
                     p._internal_update(kwargs)
                     p.set_label('_nolegend_')
 
+        self._request_autoscale_view()
         if nx == 1:
             return tops[0], bins, patches[0]
         else:
